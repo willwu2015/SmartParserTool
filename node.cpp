@@ -208,7 +208,8 @@ Node* Node::matchInChildrens(const QString& source, QList<Element*>& elements, Q
 
             pickEnd = node->getPickEnd();
             if(!pickEnd.isEmpty()) {
-                indexForPickEnd = source.indexOf(pickEnd);
+                // 或许keyWord和pickEnd字符相同，所以indexForPickEnd从indexForKeyWord之后开始查找
+                indexForPickEnd = source.indexOf(pickEnd, indexForKeyWord + 1);
                 if(indexForKeyWord < indexForPickEnd) {
                     Element* element = new Element();
                     if(element != NULL) {

@@ -30,7 +30,13 @@ SOURCES += \
     node.cpp \
     treemanager.cpp \
     headnode.cpp \
-    element.cpp
+    element.cpp \
+    classifycsvfiles.cpp \
+    verifymessage.cpp \
+    fileutilities.cpp \
+    basedata.cpp \
+    traindata.cpp \
+    datafactory.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +46,13 @@ HEADERS += \
     node.h \
     treemanager.h \
     headnode.h \
-    element.h
+    element.h \
+    classifycsvfiles.h \
+    verifymessage.h \
+    fileutilities.h \
+    basedata.h \
+    traindata.h \
+    datafactory.h
 
 FORMS += \
         mainwindow.ui

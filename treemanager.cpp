@@ -3,6 +3,8 @@
 #include "headnode.h"
 #include "spglobal.h"
 #include "element.h"
+#include "datafactory.h"
+#include "traindata.h"
 
 #include <QDebug>
 #include <QJsonDocument>
@@ -49,7 +51,8 @@ bool TreeManager::findTemplate(const QString& source, QList<Element*>& elements,
         headString = source.mid(1, index - 1);
     }
     else {
-        if(index = source.indexOf("]")) {
+        index = source.indexOf("]");
+        if(index != -1) {
             headString = source.mid(1, index - 1);
         }
         else {
@@ -72,6 +75,8 @@ bool TreeManager::findTemplate(const QString& source, QList<Element*>& elements,
         else {
             if(leftString.isEmpty()) {
                 // 完美匹配，模版树到了叶子节点，同时短信也解析完成
+                TrainData* baseData = (TrainData*)DataFactory::createData(headString, elements);
+                baseData->convert();
                 return true;
             }
             else {

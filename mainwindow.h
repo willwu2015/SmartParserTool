@@ -29,12 +29,16 @@ public:
 private:
     void initView();
     int tryToFindTemplate(QString& leftString);
+    void initMenuBar();
 
 private slots:
     void sourceTextChanged();
     void flagTriggered(int type, const QString& selected);
     void addNode(Node* node);
     void saveToFile();
+
+    void classifyAction();
+    void verifyAction();
 
 private:
     Ui::MainWindow *ui;

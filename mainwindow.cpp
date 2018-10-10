@@ -8,18 +8,24 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QList>
+#include <QFileDialog>
+#include <QInputDialog>
 
 #include "parsetextedit.h"
 #include "nodeeditor.h"
 #include "treemanager.h"
 #include "spglobal.h"
 #include "element.h"
+#include "classifycsvfiles.h"
+#include "verifymessage.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), mTreeManager(new TreeManager()),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    initMenuBar();
     initView();
 }
 
@@ -99,6 +105,18 @@ void MainWindow::initView() {
     connect(saveButton, &QPushButton::clicked, this, &MainWindow::saveToFile);
     saveFileLayout->addWidget(saveButton);
     layout->addLayout(saveFileLayout);
+}
+
+void MainWindow::initMenuBar() {
+    QAction* pActionA = new QAction(tr("&Classify"));
+    connect(pActionA, &QAction::triggered, this, &MainWindow::classifyAction);
+
+    QAction* pActionB = new QAction(tr("&Verify"));
+    connect(pActionB, &QAction::triggered, this, &MainWindow::verifyAction);
+
+    QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
+    fileMenu->addAction(pActionA);
+    fileMenu->addAction(pActionB);
 }
 
 // Private slots
@@ -194,4 +212,31 @@ void MainWindow::addNode(Node* node) {
 void MainWindow::saveToFile() {
     int result = mTreeManager->saveTreeToFile();
     qDebug() << "The result of saving tree to file is " << result;
+}
+
+void MainWindow::classifyAction() {
+    qDebug() << "Classify action is triggered.";
+
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"),
+                                                      "/Users/willwu/Documents",
+                                                      QFileDialog::ShowDirsOnly
+                                                      | QFileDialog::DontResolveSymlinks);
+
+    qDebug() << "Process files in " << dir;
+
+    // 获取提取关键字
+    bool ok;
+    QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"),
+                                               tr("Key Word:"), QLineEdit::Normal,
+                                               QDir::home().dirName(), &ok);
+    if (ok && !text.isEmpty()) {
+        if(ClassifyCsvFiles::process(dir, text)) {
+            qDebug() << "Succeed to process csv files.";
+        }
+    }
+}
+
+void MainWindow::verifyAction() {
+    VerifyMessage verifyMessageDialog;
+    verifyMessageDialog.exec();
 }

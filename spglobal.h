@@ -14,4 +14,6 @@ const static int RESULT_TEMPLTE_NEED_UPDATE = 5;
 
 const static int END_STRING_LENGTH = 2;
 
+const static int DATA_TYPE_TRAIN = 0;
+
 #endif // SPGLOBAL_H
