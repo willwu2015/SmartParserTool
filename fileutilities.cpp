@@ -25,3 +25,13 @@ QStringList FileUtilities::readFromCVSFile(const QString& fileName) {
 
     return csvList;
 }
+
+
+QString FileUtilities::preProcess(const QString& message) {
+    if(!message.endsWith("。")) {
+        return message + "。";
+    }
+    else {
+        return message;
+    }
+}

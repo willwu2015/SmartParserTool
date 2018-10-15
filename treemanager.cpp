@@ -76,7 +76,10 @@ bool TreeManager::findTemplate(const QString& source, QList<Element*>& elements,
             if(leftString.isEmpty()) {
                 // 完美匹配，模版树到了叶子节点，同时短信也解析完成
                 TrainData* baseData = (TrainData*)DataFactory::createData(headString, elements);
-                baseData->convert();
+                if(baseData != NULL) {
+                    baseData->convert();
+                }
+
                 return true;
             }
             else {

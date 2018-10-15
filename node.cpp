@@ -6,12 +6,14 @@
 #include "element.h"
 
 Node::Node() : id(0), mKeyWord(QString()), mPickWord(QString()),
-    mPickEnd(QString()), mType(TYPE_LEAF), mParent(NULL) {
+    mPickEnd(QString()), mType(TYPE_LEAF), mIsRegExpForPickEnd(false),
+    mMaxContentLength(-1), mParent(NULL) {
 
 }
 
-Node::Node(const QString& keyword, const QString& pickword, const QString& pickend) :
+Node::Node(const QString& keyword, const QString& pickword, const QString& pickend, bool isRegExp) :
     id(0), mKeyWord(keyword), mPickWord(pickword), mPickEnd(pickend), mType(TYPE_LEAF),
+    mIsRegExpForPickEnd(isRegExp), mMaxContentLength(-1),
     mParent(NULL)
 {
 
@@ -79,6 +81,21 @@ void Node::read(const QJsonObject &json) {
     this->mPickEnd = json.value("PickEnd").toString();
     this->mPickWord = json.value("PickWord").toString();
     this->mType = json.value("Type").toInt();
+    if(json.contains("MaxContentLength")) {
+        this->mMaxContentLength = json.value("MaxContentLength").toInt();
+    }
+    else {
+        this->mMaxContentLength = -1;
+    }
+
+    if(json.contains("IsRegExp")) {
+        qDebug() << json.value("IsRegExp");
+        this->mIsRegExpForPickEnd = json.value("IsRegExp").toBool();
+    }
+    else {
+        this->mIsRegExpForPickEnd = false;
+    }
+
     //this->mParent = json.value("ParentId").toInt();
     this->id = json.value("id").toInt();
 
@@ -97,7 +114,9 @@ void Node::write(QJsonObject &json) const {
     json["KeyWord"] = mKeyWord;
     json["PickWord"] = mPickWord;
     json["PickEnd"] = mPickEnd;
+    json["IsRegExp"] = mIsRegExpForPickEnd;
     json["Type"] = mType;
+    json["MaxContentLength"] = mMaxContentLength;
     if(mParent != NULL) {
         json["ParentId"] = mParent->getId();
     }
@@ -164,7 +183,7 @@ bool Node::match(const QString& source, QList<Element*>& elements, QString& left
                         }
                         else {
                             if(nextSoure.length() > END_STRING_LENGTH) {
-                                // 待解析的短信已经到头了，但是模版树已经到叶子节点了，说明模版树需要继续生长
+                                // 待解析的短信没有到头了，但是模版树已经到叶子节点了，说明模版树需要继续生长
                                 qDebug() << "There are more text needed be parsed. (" << nextSoure << ")";
                                 leftString = nextSoure;
                                 currentNode = node;
@@ -197,6 +216,8 @@ Node* Node::matchInChildrens(const QString& source, QList<Element*>& elements, Q
     int indexForPickEnd = 0;
     int indexForContent = 0;
     QString nextSoure = QString();
+    QString content = QString();
+    int maxContentLength = -1;
 
     for(int i = 0; i < mChildrens.size(); i++) {
         node = mChildrens[i];
@@ -205,19 +226,38 @@ Node* Node::matchInChildrens(const QString& source, QList<Element*>& elements, Q
             if(!keyWord.isEmpty()) {
                 indexForKeyWord = source.indexOf(keyWord);
             }
+            else {
+                indexForKeyWord = 0;
+            }
 
             pickEnd = node->getPickEnd();
             if(!pickEnd.isEmpty()) {
                 // 或许keyWord和pickEnd字符相同，所以indexForPickEnd从indexForKeyWord之后开始查找
-                indexForPickEnd = source.indexOf(pickEnd, indexForKeyWord + 1);
-                if(indexForKeyWord < indexForPickEnd) {
+                if(!node->isRegExpForPickEnd()) {
+                    indexForPickEnd = source.indexOf(pickEnd, indexForKeyWord + keyWord.length());
+                }
+                else {
+                    indexForPickEnd = source.indexOf(QRegExp(pickEnd), indexForKeyWord + keyWord.length());
+                }
+
+                if(indexForKeyWord >= 0 && (indexForKeyWord < indexForPickEnd)) {
                     Element* element = new Element();
                     if(element != NULL) {
                         indexForContent = indexForKeyWord + keyWord.length();
-                        element->setContent(source.mid(indexForContent, indexForPickEnd - indexForContent));
+                        content = source.mid(indexForContent, indexForPickEnd - indexForContent);
+                        maxContentLength = node->getMaxContentLength();
+                        if(maxContentLength >= 0 && content.length() > maxContentLength) {
+                            continue;
+                        }
+                        element->setContent(content);
                         element->setPickWord(node->getPickWord());
                         elements.append(element);
-                        nextSoure = source.mid(indexForPickEnd + pickEnd.length());
+                        if(node->isRegExpForPickEnd()) {
+                            nextSoure = source.mid(indexForPickEnd);
+                        }
+                        else {
+                            nextSoure = source.mid(indexForPickEnd + pickEnd.length());
+                        }
                         if(node->getType() != TYPE_LEAF) {
                             if(nextSoure.length() <= END_STRING_LENGTH) {
                                 // 虽然模版树没有到叶子，但是待解析的短信已经完成，退出解析

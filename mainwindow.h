@@ -16,6 +16,7 @@ class MainWindow;
 class ParseTextEdit;
 class NodeEditor;
 class TreeManager;
+class VerifyMessage;
 
 class MainWindow : public QMainWindow
 {
@@ -48,6 +49,7 @@ private:
     ParseTextEdit *mParseTextEdit;
     NodeEditor *mNodeEditor;
     TreeManager *mTreeManager;
+    VerifyMessage *mVerifyMessageWidget;
 };
 
 #endif // MAINWINDOW_H

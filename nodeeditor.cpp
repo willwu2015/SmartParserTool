@@ -56,18 +56,24 @@ void NodeEditor::initView() {
     QLabel *pickEndLabel = new QLabel(this);
     pickEndLabel->setText(tr("Pick End:"));
     mPickEndEditor = new QLineEdit(this);
-    mPickEndEditor->setReadOnly(true);
     pickEndLayout->addWidget(pickEndLabel);
     pickEndLayout->addWidget(mPickEndEditor);
     layout->addLayout(pickEndLayout);
+
+    mIsRegExp = new QCheckBox(tr("This is a regular expression."), this);
+    layout->addWidget(mIsRegExp);
 
     QHBoxLayout *contentLayout = new QHBoxLayout;
     QLabel *contentLabel = new QLabel(this);
     contentLabel->setText(tr("Content:"));
     mContentEditor = new QLineEdit(this);
     mContentEditor->setReadOnly(true);
+    QLabel *contentLengthLabel = new QLabel(tr("Max length:"), this);
+    mMaxContentLength = new QLineEdit(this);
     contentLayout->addWidget(contentLabel);
     contentLayout->addWidget(mContentEditor);
+    contentLayout->addWidget(contentLengthLabel);
+    contentLayout->addWidget(mMaxContentLength);
     layout->addLayout(contentLayout);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
@@ -83,6 +89,13 @@ void NodeEditor::initView() {
 }
 
 void NodeEditor::addButtonPushed() {
-    Node *node = new Node(mKeyWordEditor->text(), mPickWordEditor->text(), mPickEndEditor->text());
+    Node *node = new Node(mKeyWordEditor->text(), mPickWordEditor->text(), mPickEndEditor->text(), mIsRegExp->checkState() == Qt::Checked);
+    if(mMaxContentLength->text().isEmpty()) {
+        node->setMaxContentLength(-1);
+    }
+    else {
+        node->setMaxContentLength(mMaxContentLength->text().toInt());
+    }
+
     emit addNode(node);
 }

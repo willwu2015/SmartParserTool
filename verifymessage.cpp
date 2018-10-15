@@ -1,6 +1,7 @@
 #include "verifymessage.h"
 #include "fileutilities.h"
 #include "treemanager.h"
+#include "element.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -9,14 +10,15 @@
 #include <QFileDialog>
 
 VerifyMessage::VerifyMessage(QWidget *parent) : QDialog(parent),
-    mTotalMessages(0), mSucceedMessages(0), mFailMessages(0)
+    mTotalMessages(0), mSucceedMessages(0), mFailMessages(0), mMessages(QStringList()), mCurrentIndex(0)
 {
     initView();
 }
 
 // private sections
 void VerifyMessage::initView() {
-    QVBoxLayout *wholeLayout = new QVBoxLayout;
+    QVBoxLayout *wholeLayout = new QVBoxLayout(this);
+    wholeLayout->setSizeConstraint(QLayout::SetFixedSize);
 
     QHBoxLayout *fileLayout = new QHBoxLayout;
     QLabel *fileLabel = new  QLabel(tr("File Name:"), this);
@@ -28,9 +30,14 @@ void VerifyMessage::initView() {
     fileLayout->addWidget(mFileSelectButton);
     wholeLayout->addLayout(fileLayout);
 
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
     mVerifyButton = new QPushButton(tr("Verify"), this);
     connect(mVerifyButton, &QAbstractButton::clicked, this, &VerifyMessage::verify);
-    wholeLayout->addWidget(mVerifyButton);
+    mVerifySingleButton = new QPushButton(tr("Verify Next"), this);
+    connect(mVerifySingleButton, &QAbstractButton::clicked, this, &VerifyMessage::verifySingle);
+    buttonLayout->addWidget(mVerifyButton);
+    buttonLayout->addWidget(mVerifySingleButton);
+    wholeLayout->addLayout(buttonLayout);
 
     QHBoxLayout *resultLayout = new QHBoxLayout;
     resultLayout->addStretch();
@@ -40,6 +47,7 @@ void VerifyMessage::initView() {
     mSucceedLabel = new QLabel("0", this);
     QLabel *failLabel = new QLabel(tr("Fail:"), this);
     mFailLabel = new QLabel("0", this);
+    mFailLabel->setWordWrap(true);
     resultLayout->addWidget(totalLabel);
     resultLayout->addWidget(mTotalLabel);
     resultLayout->addWidget(succeedLabel);
@@ -52,8 +60,12 @@ void VerifyMessage::initView() {
     QLabel *failMessageLabel = new QLabel(tr("Fail Messages:"), this);
     wholeLayout->addWidget(failMessageLabel);
 
+    mFailMessageLabel = new QLabel(this);
+    mFailMessageLabel->setVisible(false);
     mFailMessageEdit = new QTextEdit(this);
+    wholeLayout->addWidget(mFailMessageLabel);
     wholeLayout->addWidget(mFailMessageEdit);
+    wholeLayout->addStretch();
 
     setLayout(wholeLayout);
 }
@@ -83,7 +95,7 @@ void VerifyMessage::verify() {
             elements.clear();
             leftString = QString();
             mTotalMessages++;
-            if(!treeManager.findTemplate(messages[i], elements, leftString)) {
+            if(!treeManager.findTemplate(FileUtilities::preProcess(messages[i]), elements, leftString)) {
                 mFailMessages++;
                 qDebug() << "Fail message: " << messages[i];
                 failMessages += messages[i] + "\n";
@@ -94,6 +106,10 @@ void VerifyMessage::verify() {
         }
 
         if(!failMessages.isEmpty()) {
+            if(!mFailMessageEdit->isVisible()) {
+                mFailMessageLabel->setVisible(false);
+                mFailMessageEdit->setVisible(true);
+            }
             mFailMessageEdit->setText(failMessages);
         }
 
@@ -101,4 +117,42 @@ void VerifyMessage::verify() {
         mSucceedLabel->setText(QString::number(mSucceedMessages));
         mFailLabel->setText(QString::number(mFailMessages));
     }
+}
+
+void VerifyMessage::verifySingle() {
+    if(mMessages.isEmpty()) {
+        mMessages = FileUtilities::readFromCVSFile(mFileNameEdit->text());
+        mCurrentIndex = 0;
+    }
+
+    QString message = QString();
+    if(mCurrentIndex < mMessages.size()) {
+        message = mMessages[mCurrentIndex];
+        message = FileUtilities::preProcess(message);
+    }
+    else {
+        return;
+    }
+
+    QList<Element*> elements;
+    QString leftString;
+    TreeManager treeManager(this);
+
+    if(!mFailMessageLabel->isVisible()) {
+        mFailMessageLabel->setVisible(true);
+        mFailMessageEdit->setVisible(false);
+    }
+
+    if(treeManager.findTemplate(message, elements, leftString)) {
+        QString result = mMessages[mCurrentIndex] + "\n";
+        for(int i = 0; i < elements.size(); i++) {
+            result += elements[i]->getPickWord() + "/" + elements[i]->getContent() + "\n";
+        }
+        mFailMessageLabel->setText(result);
+    }
+    else {
+        mFailMessageLabel->setText(mMessages[mCurrentIndex]);
+    }
+
+    mCurrentIndex++;
 }

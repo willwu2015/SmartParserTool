@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QCheckBox>
 
 class Node;
 
@@ -32,7 +33,9 @@ private:
     QLineEdit *mKeyWordEditor;
     QLineEdit *mPickWordEditor;
     QLineEdit *mPickEndEditor;
+    QCheckBox *mIsRegExp;
     QLineEdit *mContentEditor;
+    QLineEdit *mMaxContentLength;
     QPushButton *mAddButton;
 };
 

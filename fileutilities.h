@@ -9,6 +9,7 @@ public:
     FileUtilities();
 
     static QStringList readFromCVSFile(const QString& fileName);
+    static QString preProcess(const QString& message);
 };
 
 #endif // FILEUTILITIES_H

@@ -8,6 +8,7 @@
 
 class Element;
 
+// 根据铁路客服模版解析出的数据
 class TrainData : public BaseData
 {
 public:

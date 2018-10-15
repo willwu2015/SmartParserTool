@@ -11,7 +11,7 @@ class Node
 {
 public:
     Node();
-    Node(const QString& keyword, const QString& pickword, const QString& pickend);
+    Node(const QString& keyword, const QString& pickword, const QString& pickend, bool isRegExp = false);
 
     int getId();
     void setId(int id);
@@ -21,9 +21,12 @@ public:
     QString getKeyWord() { return mKeyWord; }
     QString getPickWord() { return mPickWord; }
     QString getPickEnd() { return mPickEnd; }
+    bool isRegExpForPickEnd() { return mIsRegExpForPickEnd; }
     Node* findInChildrens(Node *node);
     int getType();
     void setType(int type);
+    void setMaxContentLength(int length) { mMaxContentLength = length; }
+    int getMaxContentLength() { return mMaxContentLength; }
 
     bool equal(Node* node);
 
@@ -38,7 +41,9 @@ private:
     QString mKeyWord;
     QString mPickWord;
     QString mPickEnd;
+    bool mIsRegExpForPickEnd;
     int mType;
+    int mMaxContentLength;
     Node* mParent;
     QList<Node*> mChildrens;
 };

@@ -149,6 +149,8 @@ Node* HeadNode::matchInChildrens(const QString& source, QList<Element*>& element
     int indexForPickEnd = 0;
     int indexForContent = 0;
     QString nextSoure = QString();
+    QString content = QString();
+    int maxContentLength = -1;
 
     for(int i = 0; i < mChildrens.size(); i++) {
         node = mChildrens[i];
@@ -157,18 +159,38 @@ Node* HeadNode::matchInChildrens(const QString& source, QList<Element*>& element
             if(!keyWord.isEmpty()) {
                 indexForKeyWord = source.indexOf(keyWord);
             }
+            else {
+                indexForKeyWord = 0;
+            }
 
             pickEnd = node->getPickEnd();
             if(!pickEnd.isEmpty()) {
-                indexForPickEnd = source.indexOf(pickEnd);
-                if(indexForKeyWord < indexForPickEnd) {
+                if(!node->isRegExpForPickEnd()) {
+                    indexForPickEnd = source.indexOf(pickEnd, indexForKeyWord + keyWord.length());
+                }
+                else {
+                    indexForPickEnd = source.indexOf(QRegExp(pickEnd), indexForKeyWord + keyWord.length());
+                }
+
+                if(indexForKeyWord >= 0 && (indexForKeyWord < indexForPickEnd)) {
                     Element* element = new Element();
                     if(element != NULL) {
                         indexForContent = indexForKeyWord + keyWord.length();
-                        element->setContent(source.mid(indexForContent, indexForPickEnd - indexForContent));
+                        content = source.mid(indexForContent, indexForPickEnd - indexForContent);
+                        maxContentLength = node->getMaxContentLength();
+                        if(maxContentLength >= 0 && content.length() > maxContentLength) {
+                            continue;
+                        }
+                        element->setContent(content);
                         element->setPickWord(node->getPickWord());
                         elements.append(element);
-                        nextSoure = source.mid(indexForPickEnd + pickEnd.length());
+                        if(node->isRegExpForPickEnd()) {
+                            nextSoure = source.mid(indexForPickEnd);
+                        }
+                        else {
+                            nextSoure = source.mid(indexForPickEnd + pickEnd.length());
+                        }
+
                         if(node->getType() != TYPE_LEAF) {
                             if(nextSoure.length() <= END_STRING_LENGTH) {
                                 // 虽然模版树没有到叶子，但是待解析的短信已经完成，退出解析
@@ -188,7 +210,7 @@ Node* HeadNode::matchInChildrens(const QString& source, QList<Element*>& element
                         }
                         else {
                             if(nextSoure.length() > END_STRING_LENGTH) {
-                                // 待解析的短信已经到头了，但是模版树已经到叶子节点了，说明模版树需要继续生长
+                                // 待解析的短信没有到头了，但是模版树已经到叶子节点了，说明模版树需要继续生长
                                 qDebug() << "There are more text needed be parsed. (" << nextSoure << ")";
                                 leftString = nextSoure;
                                 return node;

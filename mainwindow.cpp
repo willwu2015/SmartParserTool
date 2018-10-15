@@ -18,6 +18,7 @@
 #include "element.h"
 #include "classifycsvfiles.h"
 #include "verifymessage.h"
+#include "fileutilities.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), mTreeManager(new TreeManager()),
@@ -42,6 +43,7 @@ MainWindow::~MainWindow()
 int MainWindow::tryToFindTemplate(QString& leftString) {
     QString source = mSourceTextEdit->toPlainText();
 
+    source = FileUtilities::preProcess(source);
     QList<Element*> elements;
     if(mTreeManager->findTemplate(source, elements, leftString)) {
         // 将elements内容显示在
@@ -130,7 +132,7 @@ void MainWindow::sourceTextChanged() {
             }
             else {
                 if(leftString.isEmpty()) {
-                    mParseTextEdit->setText(sourceString);
+                    mParseTextEdit->setText(FileUtilities::preProcess(sourceString));
                     mParseTextEdit->init(true);
                 }
                 else {
@@ -237,6 +239,8 @@ void MainWindow::classifyAction() {
 }
 
 void MainWindow::verifyAction() {
+//    mVerifyMessageWidget = new VerifyMessage(ui->centralWidget);
+    //mVerifyMessageWidget->show();
     VerifyMessage verifyMessageDialog;
     verifyMessageDialog.exec();
 }
