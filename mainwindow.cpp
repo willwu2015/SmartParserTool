@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initMenuBar();
     initView();
+    mResultString = QString();
 }
 
 MainWindow::~MainWindow()
@@ -83,15 +84,21 @@ void MainWindow::initView() {
     QLabel *elementsLabel = new QLabel(centralWidget);
     elementsLabel->setText(tr("Parse Result:"));
     mElementsLabel = new QLabel(centralWidget);
+    mElementsLabel->setWordWrap(true);
     elementsLayout->addWidget(elementsLabel);
     elementsLayout->addWidget(mElementsLabel);
     elementsLayout->addStretch();
     layout->addLayout(elementsLayout);
 
     QVBoxLayout *parseLayout = new QVBoxLayout;
-    mResultLayout = new QHBoxLayout;
-    mResultLayout->addStretch();
-    parseLayout->addLayout(mResultLayout);
+    //mResultLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+    //mResultLayout->addStretch();
+    //mResultLayout->setSizeConstraint(QLayout::SetFixedSize);
+    //parseLayout->addLayout(mResultLayout);
+
+    mResultLabel = new QLabel(this);
+    mResultLabel->setWordWrap(true);
+    parseLayout->addWidget(mResultLabel);
     mParseTextEdit = new ParseTextEdit(centralWidget);
     connect(mParseTextEdit, &ParseTextEdit::flagTriggered, this, &MainWindow::flagTriggered);
     parseLayout->addWidget(mParseTextEdit);
@@ -121,12 +128,23 @@ void MainWindow::initMenuBar() {
     fileMenu->addAction(pActionB);
 }
 
+void MainWindow::clearAll(QBoxLayout* layout) {
+    if(layout != NULL) {
+        qDebug() << "layout count: " << layout->count();
+        for(int i = layout->count() - 1; i >= 0; i--) {
+            layout->removeItem(layout->itemAt(i));
+        }
+    }
+}
+
 // Private slots
 void MainWindow::sourceTextChanged() {
     if(mSourceTextEdit != NULL && mParseTextEdit != NULL) {
         QString sourceString = mSourceTextEdit->toPlainText();
-        if(sourceString.startsWith("【") || sourceString.startsWith("[")) {
+        if(sourceString.startsWith("【") || sourceString.startsWith("[") ||
+           sourceString.endsWith("】") || sourceString.endsWith("]")) {
             QString leftString = QString();
+
             if(tryToFindTemplate(leftString) == RESULT_SUCCEED) {
                 mParseTextEdit->setText(tr("Find a template to match."));
             }
@@ -156,8 +174,10 @@ void MainWindow::flagTriggered(int type, const QString& selected) {
             QLabel *label = new QLabel(ui->centralWidget);
             label->setStyleSheet("color:red;");
             label->setText(selected);
-            qDebug() << "result layout count: " << mResultLayout->count();
-            mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            //qDebug() << "result layout count: " << mResultLayout->count();
+            mResultString += "<font color=\"red\">" + selected + " ";
+            //mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            mResultLabel->setText(mResultString);
 
             if(mTreeManager != NULL) {
                 mTreeManager->flagHead(selected, true);
@@ -169,8 +189,10 @@ void MainWindow::flagTriggered(int type, const QString& selected) {
             QLabel *label = new QLabel(ui->centralWidget);
             label->setStyleSheet("color:red;");
             label->setText(selected);
-            qDebug() << "result layout count: " << mResultLayout->count();
-            mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            //qDebug() << "result layout count: " << mResultLayout->count();
+            mResultString += "<font color=\"red\">" + selected + " ";
+            //mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            mResultLabel->setText(mResultString);
 
             mNodeEditor->setKeyWord(selected);
         }
@@ -181,8 +203,10 @@ void MainWindow::flagTriggered(int type, const QString& selected) {
             QLabel *label = new QLabel(ui->centralWidget);
             label->setStyleSheet("color:red;");
             label->setText(selected);
-            qDebug() << "result layout count: " << mResultLayout->count();
-            mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            //qDebug() << "result layout count: " << mResultLayout->count();
+            mResultString += "<font color=\"red\">" + selected + " ";
+            //mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            mResultLabel->setText(mResultString);
 
             mNodeEditor->setPickEnd(selected);
         }
@@ -192,8 +216,10 @@ void MainWindow::flagTriggered(int type, const QString& selected) {
             QLabel *label = new QLabel(ui->centralWidget);
             label->setStyleSheet("color:blue;");
             label->setText(selected);
-            qDebug() << "result layout count: " << mResultLayout->count();
-            mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            //qDebug() << "result layout count: " << mResultLayout->count();
+            mResultString += "<font color=\"blue\">" + selected + " ";
+            //mResultLayout->insertWidget(mResultLayout->count() - 1, label);
+            mResultLabel->setText(mResultString);
 
             mNodeEditor->setContent(selected);
         }

@@ -45,15 +45,50 @@ void TreeManager::flagHead(const QString& head, bool newHeadNode) {
 }
 
 bool TreeManager::findTemplate(const QString& source, QList<Element*>& elements, QString& leftString) {
-    int index = source.indexOf("】");
-    QString headString;
-    if(index != -1) {
-        headString = source.mid(1, index - 1);
-    }
-    else {
-        index = source.indexOf("]");
+    QString headString = QString();
+    QString contentString = QString();
+    if(source.startsWith("【")) {
+        int index = source.indexOf("】");
+
         if(index != -1) {
             headString = source.mid(1, index - 1);
+            contentString = source.mid(index + 1);
+        }
+        else {
+            QMessageBox::information(NULL, tr("Information"), tr("Can not find 】or ]. The string is invalid."));
+            return RESULT_FAIL_PARSE;
+        }
+    }
+    else if(source.endsWith("】")) {
+        int index = source.lastIndexOf("【");
+
+        if(index != -1) {
+            headString = source.mid(index, source.lastIndexOf("】") - index - 1);
+            contentString = source.mid(0, index);
+        }
+        else {
+            QMessageBox::information(NULL, tr("Information"), tr("Can not find 】or ]. The string is invalid."));
+            return RESULT_FAIL_PARSE;
+        }
+    }
+    else if(source.startsWith("[")) {
+        int index = source.indexOf("]");
+
+        if(index != -1) {
+            headString = source.mid(1, index - 1);
+            contentString = source.mid(index + 1);
+        }
+        else {
+            QMessageBox::information(NULL, tr("Information"), tr("Can not find 】or ]. The string is invalid."));
+            return RESULT_FAIL_PARSE;
+        }
+    }
+    else if(source.endsWith("]")) {
+        int index = source.lastIndexOf("[");
+
+        if(index != -1) {
+            headString = source.mid(index, source.lastIndexOf("]") - index - 1);
+            contentString = source.mid(0, index);
         }
         else {
             QMessageBox::information(NULL, tr("Information"), tr("Can not find 】or ]. The string is invalid."));
@@ -63,7 +98,7 @@ bool TreeManager::findTemplate(const QString& source, QList<Element*>& elements,
 
     flagHead(headString);
 
-    QString contentString = source.mid(index + 1);
+
     qDebug() << "Content string is " << contentString;
 
     if(mHeadNode != NULL) {

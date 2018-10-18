@@ -5,6 +5,7 @@
 #include <QTextEdit>
 #include <QString>
 #include <QHBoxLayout>
+#include <QBoxLayout>
 #include <QLabel>
 
 #include "node.h"
@@ -32,6 +33,8 @@ private:
     int tryToFindTemplate(QString& leftString);
     void initMenuBar();
 
+    void clearAll(QBoxLayout *layout);
+
 private slots:
     void sourceTextChanged();
     void flagTriggered(int type, const QString& selected);
@@ -45,11 +48,13 @@ private:
     Ui::MainWindow *ui;
     QTextEdit *mSourceTextEdit;
     QLabel *mElementsLabel;
-    QHBoxLayout *mResultLayout;
+    //QBoxLayout *mResultLayout;
+    QLabel *mResultLabel;
     ParseTextEdit *mParseTextEdit;
     NodeEditor *mNodeEditor;
     TreeManager *mTreeManager;
     VerifyMessage *mVerifyMessageWidget;
+    QString mResultString;
 };
 
 #endif // MAINWINDOW_H

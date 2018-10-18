@@ -15,6 +15,10 @@ NodeEditor::NodeEditor(QWidget *parent) : QWidget(parent)
 
 void NodeEditor::setKeyWord(const QString& keyword) {
     mKeyWordEditor->setText(keyword);
+    mContentEditor->setText("");
+    mPickEndEditor->setText("");
+    mPickWordEditor->setText("");
+    mAddButton->setEnabled(true);
 }
 
 void NodeEditor::setContent(const QString& content) {
@@ -79,6 +83,7 @@ void NodeEditor::initView() {
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     mAddButton = new QPushButton(this);
     mAddButton->setText(tr("Add"));
+    mAddButton->setEnabled(false);
     connect(mAddButton, &QPushButton::clicked, this, &NodeEditor::addButtonPushed);
     buttonLayout->addStretch();
     buttonLayout->addWidget(mAddButton);
@@ -96,6 +101,8 @@ void NodeEditor::addButtonPushed() {
     else {
         node->setMaxContentLength(mMaxContentLength->text().toInt());
     }
+
+    mAddButton->setEnabled(false);
 
     emit addNode(node);
 }

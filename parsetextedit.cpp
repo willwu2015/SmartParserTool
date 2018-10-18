@@ -24,6 +24,7 @@ void ParseTextEdit::init(bool fromHead) {
     else {
         stateChangedTo(STATE_KEYWORD);
     }
+    mCurrentFlagIndex = 0;
 }
 
 // Protected Section
@@ -102,6 +103,12 @@ void ParseTextEdit::flagHead() {
         qDebug() << "Current index " << mCurrentFlagIndex;
         stateChangedTo(STATE_KEYWORD);
     }
+    else if(index > 1) {
+        emit flagTriggered(ParseTextEdit::TYPE_HEAD, this->textCursor().selectedText());
+        mCurrentFlagIndex = 0;
+        qDebug() << "Current index " << mCurrentFlagIndex;
+        stateChangedTo(STATE_KEYWORD);
+    }
     else {
         qDebug() << "Error: source: " << source;
     }
@@ -113,7 +120,7 @@ void ParseTextEdit::flagKeyWord() {
     QString source = this->toPlainText();
 
     qDebug() << "Selected text is " << selected;
-    int index = source.indexOf(selected);
+    int index = source.indexOf(selected, mCurrentFlagIndex);
 
     if(index != mCurrentFlagIndex) {
         // pop a dialog to notify user

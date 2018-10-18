@@ -62,6 +62,7 @@ void VerifyMessage::initView() {
 
     mFailMessageLabel = new QLabel(this);
     mFailMessageLabel->setVisible(false);
+    mFailMessageLabel->setWordWrap(true);
     mFailMessageEdit = new QTextEdit(this);
     wholeLayout->addWidget(mFailMessageLabel);
     wholeLayout->addWidget(mFailMessageEdit);

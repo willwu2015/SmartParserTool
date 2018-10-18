@@ -78,6 +78,26 @@ bool ClassifyCsvFiles::processFile(const QFileInfo& fileInfo, const QString& ext
                     itemsList.push_back(message);
                 }
             }
+            else if(message.endsWith("】")) {
+                int indexforBegin = message.lastIndexOf("【");
+                if(indexforBegin != -1) {
+                    keyWord = message.mid(indexforBegin + 1, message.lastIndexOf("】") - indexforBegin - 1);
+                }
+
+                if(!keyWord.isEmpty() && keyWord == extractWord){
+                    itemsList.push_back(message);
+                }
+            }
+            else if(message.endsWith("]")) {
+                int indexforBegin = message.lastIndexOf("[");
+                if(indexforBegin != -1) {
+                    keyWord = message.mid(indexforBegin + 1, message.lastIndexOf("]") - indexforBegin - 1);
+                }
+
+                if(!keyWord.isEmpty() && keyWord == extractWord){
+                    itemsList.push_back(message);
+                }
+            }
         }
 
         file.close();
